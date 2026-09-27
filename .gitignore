@@ -12,13 +12,13 @@ dist/
 .env
 
 # Data, models, reports (regenerable)
-data/
-models/
-reports/
+/data/
+/models/
+/reports/
 
 # Logs — except the permanent holdout audit log
-logs/*
-!logs/holdout_runs.jsonl
+/logs/*
+!/logs/holdout_runs.jsonl
 
 # OS / editor
 .DS_Store

@@ -9,16 +9,19 @@ repos:
         args: ["--maxkb=1000"]
       - id: detect-private-key
 
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.6.9
-    hooks:
-      - id: ruff
-        args: ["--fix"]
-      - id: ruff-format
-
-  # mypy runs from the project venv so it sees the real dependencies.
+  # ruff + mypy run from the project venv: same versions as `uv run`, real dependencies.
   - repo: local
     hooks:
+      - id: ruff
+        name: ruff
+        entry: uv run ruff check --fix
+        language: system
+        types: [python]
+      - id: ruff-format
+        name: ruff-format
+        entry: uv run ruff format
+        language: system
+        types: [python]
       - id: mypy
         name: mypy
         entry: uv run mypy src tests

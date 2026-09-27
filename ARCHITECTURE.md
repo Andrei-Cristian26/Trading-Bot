@@ -18,7 +18,19 @@ src/tradebot/
   data/ features/ labels/ models/ strategies/ risk/ execution/ backtest/ live/ reporting/
 tests/unit  tests/anti_bias  tests/data_quality
 logs/holdout_runs.jsonl permanent holdout audit log (committed, append-only)
+data/                   local only (gitignored), rebuilt with `tradebot data`
+  raw/minute/{SYM}/{YYYY-MM}.parquet          complete month, never refetched
+  raw/minute/{SYM}/{YYYY-MM}.partial.parquet  current month, refetched every run
 ```
+
+## Raw data
+- Alpaca 1-min SIP bars, stored exactly as received: **unadjusted**, **UTC**, labeled by bar
+  **start** time, extended hours included. One file per symbol per ET calendar month.
+- Regular session = bar starts 09:30-15:59 ET. Alpaca also returns a 16:00 bar (the post-close
+  minute), which is not part of the session.
+- `tradebot data` is resumable and idempotent: re-run it any time to fill gaps or update.
+  Full history is ~8.5k files, takes ~1 h on the free-tier rate limit, and uses a few GB.
+- Holdout-period data IS downloaded; the holdout guard lives in the feed/loader layer.
 
 ## Data flow
 ```
@@ -68,7 +80,7 @@ Backtest: HistoricalFeed + SimBroker.   Live: LiveFeed + AlpacaPaperBroker.   No
 ```
 uv sync                                  install
 uv run tradebot config                   validate config, print hash
-uv run tradebot data                     download/update bars          (phase 2)
+uv run tradebot data [--symbols SPY,QQQ] download/update raw minute bars
 uv run tradebot backtest                 backtest + report             (phase 3)
 uv run tradebot train                    walk-forward models           (phase 4)
 uv run tradebot holdout --holdout        single logged holdout run     (phase 5)
