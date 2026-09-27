@@ -15,6 +15,7 @@ config/universe.yaml    ETFs + stocks (stock -> sector ETF)
 config/holdout.lock     frozen holdout start date (committed; never edit by hand)
 src/tradebot/
   config.py types.py cli.py
+  market_calendar.py    Alpaca sessions (holidays, half days) + hourly bar grid
   data/ features/ labels/ models/ strategies/ risk/ execution/ backtest/ live/ reporting/
 tests/unit  tests/anti_bias  tests/data_quality
 logs/holdout_runs.jsonl permanent holdout audit log (committed, append-only)
@@ -26,6 +27,18 @@ Alpaca 1-min SIP bars -> session-aligned hourly bars (Parquet) -> DataFeed (cloc
   -> features -> Strategy.on_bar -> Signals -> RiskManager.approve/size -> Broker
 Backtest: HistoricalFeed + SimBroker.   Live: LiveFeed + AlpacaPaperBroker.   Nothing else differs.
 ```
+
+### Minute -> hourly bars (`data/resample.py`)
+- Alpaca labels minute bars by their START time, in UTC.
+- A minute starting at t is kept only if `open <= t < close` for its session (from
+  `MarketCalendar`). This drops pre/post-market, holidays, and the post-close minute that
+  starts at 16:00 ET (13:00 on half days).
+- Buckets are anchored at the session open, 1 hour long, the last one truncated at the close:
+  7 bars on a full day, 4 on a half day. Each bar is labeled by its END time in
+  America/New_York.
+- Empty buckets produce no row (nothing is forward-filled); `n_minutes` counts the minute
+  bars in each bucket. Pass `now=` whenever the minute data may stop mid-bucket, so an
+  unfinished bucket is never emitted as a complete bar.
 
 ## Invariants (every change must preserve these; most are enforced by tests)
 1. **Data <= now.** Bars are labeled by their END timestamp. Strategies and features only see
