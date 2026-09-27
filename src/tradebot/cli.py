@@ -31,9 +31,35 @@ def _todo(phase: int) -> None:
 
 
 @app.command()
-def data(path: ConfigOpt = DEFAULT_CONFIG) -> None:
-    """Download / update historical bars."""
-    _todo(2)
+def data(
+    path: ConfigOpt = DEFAULT_CONFIG,
+    symbols: Annotated[str | None, typer.Option(help="Comma-separated; default: universe")] = None,
+    start: Annotated[str | None, typer.Option(help="YYYY-MM-DD; default: data.start")] = None,
+    workers: Annotated[int, typer.Option(min=1, max=8)] = 4,
+) -> None:
+    """Download / update raw 1-minute bars (resumable; safe to re-run)."""
+    from datetime import date
+
+    from tradebot.config import AlpacaSecrets
+    from tradebot.data.download import download_universe
+    from tradebot.data.store import Store
+
+    cfg = load_config(path)
+    universe = list(cfg.universe.symbols)
+    syms = [s.strip().upper() for s in symbols.split(",")] if symbols else universe
+    results = download_universe(
+        syms,
+        Store(cfg.path(cfg.data.store_dir)),
+        date.fromisoformat(start) if start else cfg.data.start,
+        cfg.data.feed_hist,
+        AlpacaSecrets(),
+        workers=workers,
+    )
+    failed = sorted(set(syms) - set(results))
+    typer.echo(f"done: {len(results)}/{len(syms)} symbols, {sum(results.values())} months fetched")
+    if failed:
+        typer.echo(f"FAILED: {', '.join(failed)} (re-run to resume)", err=True)
+        raise typer.Exit(1)
 
 
 @app.command()

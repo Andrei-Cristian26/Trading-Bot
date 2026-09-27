@@ -1,1 +1,1 @@
-"""Alpaca minute-bar download, Parquet store, and resampling to session-aligned hourly bars."""
+"""Download, session-aligned hourly bars, corporate-action adjustment, storage, feeds."""

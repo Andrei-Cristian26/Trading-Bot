@@ -8,7 +8,7 @@ and coding conventions.
 
 ## Status
 - [x] Phase 1: scaffold, config, interfaces
-- [ ] Phase 2: data pipeline
+- [ ] Phase 2: data pipeline (downloader, calendar, resampler done; hourly build, adjustment, holdout lock to do)
 - [ ] Phase 3: backtester, baseline strategy, reports
 - [ ] Phase 4: features, labels, walk-forward LightGBM
 - [ ] Phase 5: holdout evaluation
