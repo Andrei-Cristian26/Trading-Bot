@@ -49,8 +49,9 @@ Backtest: HistoricalFeed + SimBroker.   Live: LiveFeed + AlpacaPaperBroker.   No
   7 bars on a full day, 4 on a half day. Each bar is labeled by its END time in
   America/New_York.
 - Empty buckets produce no row (nothing is forward-filled); `n_minutes` counts the minute
-  bars in each bucket. Pass `now=` whenever the minute data may stop mid-bucket, so an
-  unfinished bucket is never emitted as a complete bar.
+  bars in each bucket.
+- `now=` is required (keyword-only): buckets ending after it are dropped, so an unfinished
+  bucket is never emitted as a complete bar. `now=None` means "this data is complete".
 
 ## Invariants (every change must preserve these; most are enforced by tests)
 1. **Data <= now.** Bars are labeled by their END timestamp. Strategies and features only see

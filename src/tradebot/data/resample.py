@@ -60,13 +60,14 @@ def session_minutes(minutes: pd.DataFrame, calendar: MarketCalendar) -> pd.DataF
 
 
 def resample_hourly(
-    minutes: pd.DataFrame, calendar: MarketCalendar, now: pd.Timestamp | None = None
+    minutes: pd.DataFrame, calendar: MarketCalendar, *, now: pd.Timestamp | None
 ) -> pd.DataFrame:
     """Aggregate one symbol's minute bars into hourly bars labeled by END time.
 
-    `now`: drop buckets ending after this time. Pass it whenever the minute data may stop
-    partway through a bucket (e.g. a download that ends mid-session); an unfinished bucket
-    would otherwise look like a complete bar.
+    `now` (required): drop buckets ending after this time. If the minute data may stop
+    partway through a bucket (e.g. a download that ends mid-session), an unfinished bucket
+    would otherwise look like a complete bar. Pass `now=None` only when the data is known
+    to be complete through the last bucket it touches.
     """
     missing = [c for c in (*PRICE_COLS, "volume") if c not in minutes.columns]
     if missing:

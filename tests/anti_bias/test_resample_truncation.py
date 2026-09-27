@@ -12,7 +12,7 @@ from tradebot.market_calendar import TZ, MarketCalendar
 
 def test_truncated_minutes_give_identical_completed_bars(calendar: MarketCalendar) -> None:
     minutes = make_minutes(["2024-07-02", "2024-07-03", "2024-07-05"])
-    full = resample_hourly(minutes, calendar)
+    full = resample_hourly(minutes, calendar, now=None)
     for cut in pd.date_range("2024-07-02 09:00", "2024-07-05 17:00", freq="17min", tz=TZ):
         # Minute bars are labeled by START: the minute starting at t is only known at t+1min.
         known = minutes[minutes.index + pd.Timedelta(minutes=1) <= cut]
