@@ -1,5 +1,26 @@
+# Python
 .venv/
 __pycache__/
 *.pyc
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+*.egg-info/
+dist/
+
+# Secrets
 .env
+
+# Data, models, reports (regenerable)
+data/
+models/
+reports/
+
+# Logs — except the permanent holdout audit log
+logs/*
+!logs/holdout_runs.jsonl
+
+# OS / editor
 .DS_Store
+.vscode/
+.idea/

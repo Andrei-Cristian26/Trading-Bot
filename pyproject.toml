@@ -1,0 +1,67 @@
+[project]
+name = "tradebot"
+version = "0.1.0"
+description = "Hourly multi-asset research + Alpaca paper-trading system"
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "alpaca-py>=0.30",
+    "pandas>=2.2",
+    "numpy>=1.26",
+    "pyarrow>=16",
+    "duckdb>=1.0",
+    "scikit-learn>=1.5",
+    "lightgbm>=4.3",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.3",
+    "pyyaml>=6.0",
+    "structlog>=24.1",
+    "apscheduler>=3.10,<4",
+    "matplotlib>=3.8",
+    "typer>=0.12",
+]
+
+[project.scripts]
+tradebot = "tradebot.cli:app"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.2",
+    "ruff>=0.5",
+    "mypy>=1.10",
+    "pre-commit>=3.7",
+    "pandas-stubs",
+    "types-PyYAML",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tradebot"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF", "PD", "NPY", "DTZ"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+mypy_path = "src"
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["lightgbm.*", "alpaca.*", "sklearn.*", "apscheduler.*", "duckdb.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "network: test hits the Alpaca API (skipped unless ALPACA keys are set)",
+]

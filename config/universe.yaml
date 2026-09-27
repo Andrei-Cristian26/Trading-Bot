@@ -1,0 +1,74 @@
+# Trading universe. Edit freely; validated on load.
+#
+# WARNING: `stocks` are *today's* large caps -> survivorship bias. Stock results are
+# optimistic by construction and are always reported separately from ETF results.
+#
+# Sector map is static (current GICS). Known history caveats:
+#   - XLC launched 2018-06-19; before that its members have no sector-ETF context.
+#   - V/MA moved from Tech to Financials in 2023; GOOGL/META/NFLX/DIS from Tech/Disc. to XLC in 2018.
+
+market_context: [SPY, QQQ]
+
+etfs: [SPY, QQQ, IWM, DIA, XLK, XLF, XLE, XLV, XLY, XLP, XLI, XLU, XLB, XLRE, XLC]
+
+stocks:   # symbol: sector ETF
+  # Technology
+  AAPL: XLK
+  MSFT: XLK
+  NVDA: XLK
+  AVGO: XLK
+  ORCL: XLK
+  CRM: XLK
+  AMD: XLK
+  ADBE: XLK
+  CSCO: XLK
+  QCOM: XLK
+  # Communication services
+  GOOGL: XLC
+  META: XLC
+  NFLX: XLC
+  DIS: XLC
+  VZ: XLC
+  T: XLC
+  # Consumer discretionary
+  AMZN: XLY
+  TSLA: XLY
+  HD: XLY
+  MCD: XLY
+  NKE: XLY
+  # Financials
+  JPM: XLF
+  BAC: XLF
+  WFC: XLF
+  GS: XLF
+  MS: XLF
+  V: XLF
+  MA: XLF
+  BRK.B: XLF
+  # Health care
+  UNH: XLV
+  JNJ: XLV
+  LLY: XLV
+  MRK: XLV
+  ABBV: XLV
+  PFE: XLV
+  # Energy
+  XOM: XLE
+  CVX: XLE
+  COP: XLE
+  # Consumer staples
+  PG: XLP
+  KO: XLP
+  PEP: XLP
+  WMT: XLP
+  COST: XLP
+  # Industrials
+  CAT: XLI
+  HON: XLI
+  UNP: XLI
+  GE: XLI
+  BA: XLI
+  # Utilities / Materials / Real estate
+  NEE: XLU
+  LIN: XLB
+  PLD: XLRE

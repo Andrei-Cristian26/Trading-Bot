@@ -1,0 +1,76 @@
+# All tunables. Relative paths resolve against the repo root.
+# Validated by tradebot.config.AppConfig (unknown keys are an error).
+
+data:
+  start: 2016-01-01
+  holdout_months: 18          # most recent 18 months; frozen into config/holdout.lock on first data build
+  feed_hist: sip              # free plan: SIP history allowed except the most recent 15 min
+  feed_live: iex              # free plan real-time feed (used for latest-bar prices only)
+  volume_lag_minutes: 15      # volume features only use bars ended >= this long before `now`
+  store_dir: data
+
+universe_file: config/universe.yaml
+
+bars:
+  timeframe: 1h
+  session_open: "09:30"       # buckets [09:30,10:30) ... [15:30,16:00); labeled by bar END time
+
+portfolio:
+  initial_equity: 100000
+  max_positions: 5
+  max_gross: 1.0              # no leverage
+  cap_stock: 0.20             # max fraction of equity per stock position
+  cap_etf: 0.25
+  allow_short: true
+
+exits:
+  atr_period: 14              # daily ATR from completed sessions only
+  tp_mult: 2.0
+  sl_mult: 1.0
+  max_hold_days: 5            # exit at the close of the 5th trading day after entry
+  reversal_exit: true
+
+costs:
+  slip_bps_etf: 2.0           # slippage + half-spread, per side
+  slip_bps_stock: 5.0
+  sec_fee_per_million: 27.80  # $ per $1M of sell notional
+  finra_taf_per_share: 0.000166
+  finra_taf_max_per_trade: 8.30
+  borrow_apr: 0.005           # accrued daily while short
+  stress_multipliers: [1.0, 2.0, 3.0]
+
+risk:
+  daily_loss_limit: 0.03      # -> no new entries for the rest of the day
+  max_drawdown_kill: 0.15     # -> flatten + halt; requires manual reset
+
+strategy:
+  name: baseline              # baseline | ml
+  entry_threshold: 0.55       # min predicted P(TP before SL), ml only
+  min_edge_bps: 5.0           # expected edge net of round-trip costs must exceed this
+
+features:
+  drop: []                    # feature names to exclude
+
+model:
+  train_years: 3
+  test_months: 3
+  embargo_days: 5             # plus purging of train labels overlapping the test window
+  seed: 42
+  lgbm:
+    n_estimators: 500
+    learning_rate: 0.02
+    num_leaves: 15
+    min_child_samples: 200
+    subsample: 0.8
+    subsample_freq: 1
+    colsample_bytree: 0.8
+    reg_lambda: 1.0
+
+live:
+  bar_delay_s: 20             # wait after bar close before scoring
+  state_db: data/live.db
+  lock_ttl_s: 300
+
+sanity:                       # results beyond these are flagged as a likely bug
+  max_sharpe: 3.0
+  max_win_rate: 0.70
