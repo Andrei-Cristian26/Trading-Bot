@@ -47,6 +47,19 @@ def test_ohlcv_aggregation(calendar: MarketCalendar) -> None:
     assert first["vwap"] == pytest.approx((src["vwap"] * src["volume"]).sum() / src["volume"].sum())
 
 
+def test_bucket_boundaries_are_start_inclusive(calendar: MarketCalendar) -> None:
+    # Minutes are labeled by START: the minute starting 10:30 belongs to the bar ending 11:30.
+    minutes = make_minutes(["2024-07-02"])
+    local = pd.DatetimeIndex(minutes.index).tz_convert(TZ)
+    bars = resample_hourly(minutes, calendar)
+    at = {
+        t: minutes.loc[local == et(f"2024-07-02 {t}")].iloc[0] for t in ("09:30", "10:29", "10:30")
+    }
+    assert bars.loc[et("2024-07-02 10:30"), "open"] == at["09:30"]["open"]
+    assert bars.loc[et("2024-07-02 10:30"), "close"] == at["10:29"]["close"]
+    assert bars.loc[et("2024-07-02 11:30"), "open"] == at["10:30"]["open"]
+
+
 def test_post_close_minute_is_dropped(calendar: MarketCalendar) -> None:
     minutes = make_minutes(["2024-07-02", "2024-07-03"])
     local = pd.DatetimeIndex(minutes.index).tz_convert(TZ)

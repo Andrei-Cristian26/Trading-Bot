@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -32,6 +32,17 @@ def test_winter_session_times_are_eastern(calendar: MarketCalendar) -> None:
     open_, close = calendar.open_close(date(2024, 1, 2))
     assert open_ == pd.Timestamp("2024-01-02 14:30", tz="UTC")  # EST = UTC-5
     assert close == pd.Timestamp("2024-01-02 21:00", tz="UTC")
+
+
+def test_dst_switch_moves_the_open_in_utc() -> None:
+    # US clocks moved forward on Sunday 2016-03-13.
+    cal = MarketCalendar.from_wall_times(
+        (datetime.fromisoformat(f"{d} 09:30"), datetime.fromisoformat(f"{d} 16:00"))
+        for d in ("2016-03-11", "2016-03-14")
+    )
+    assert cal.open_close(date(2016, 3, 11))[0] == pd.Timestamp("2016-03-11 14:30", tz="UTC")
+    assert cal.open_close(date(2016, 3, 14))[0] == pd.Timestamp("2016-03-14 13:30", tz="UTC")
+    assert len(cal.bar_ends(date(2016, 3, 14))) == 7
 
 
 def test_holiday_and_coverage(calendar: MarketCalendar) -> None:
@@ -108,8 +119,14 @@ def _have_keys() -> bool:
 @pytest.mark.network
 @pytest.mark.skipif(not _have_keys(), reason="no Alpaca keys")
 def test_alpaca_calendar_known_days() -> None:
-    cal = MarketCalendar.from_alpaca(date(2018, 12, 1), date(2024, 7, 10))
+    cal = MarketCalendar.from_alpaca(date(2016, 3, 1), date(2024, 7, 10))
     assert not cal.is_session(date(2018, 12, 5))  # market closed: national day of mourning
     assert not cal.is_session(date(2024, 7, 4))
-    assert cal.open_close(date(2024, 7, 3))[1] == et("2024-07-03 13:00")
+    # Regular hours (open/close), not Alpaca's extended session_open/session_close.
+    assert cal.open_close(date(2024, 7, 2)) == (et("2024-07-02 09:30"), et("2024-07-02 16:00"))
     assert len(cal.bar_ends(date(2024, 7, 2))) == 7
+    assert cal.open_close(date(2016, 3, 11))[0] == pd.Timestamp("2016-03-11 14:30", tz="UTC")
+    assert cal.open_close(date(2016, 3, 14))[0] == pd.Timestamp("2016-03-14 13:30", tz="UTC")
+    for half_day in (date(2016, 11, 25), date(2019, 7, 3), date(2019, 12, 24), date(2024, 7, 3)):
+        ends = cal.bar_ends(half_day)
+        assert len(ends) == 4 and ends[-1].strftime("%H:%M") == "13:00", half_day
